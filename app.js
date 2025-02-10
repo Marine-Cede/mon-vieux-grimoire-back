@@ -1,5 +1,13 @@
+const mongoose = require('mongoose');
 const express = require('express');
+const Book = require('./models/Book');
 const app = express();
+
+mongoose.connect('mongodb+srv://Utilisateur1:Chi0t123@clustergrimoire.xr2dw.mongodb.net/?retryWrites=true&w=majority&appName=ClusterGrimoire',
+    { useNewUrlParser: true,
+      useUnifiedTopology: true })
+    .then(() => console.log('Connexion à MongoDB réussie !'))
+    .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 app.use(express.json());
 
@@ -10,47 +18,38 @@ app.use((req, res, next) => {
     next();
   });
 
-  app.post('/api/book', (req, res, next) => {
-    console.log(req.body);
-    res.status(201).json({
-        message: 'Livre crée'
+  app.post('/api/books', (req, res, next) => {
+    delete req.body._id;
+    const book = new Book({
+        ...req.body
     });
+    book.save()
+    .then(() => res.status(201).json({message: 'Livre enregistré !'}))
+    .catch(error => res.status(400).json({error}))
+  });
+
+  app.put('/api/books/:id', (req, res, next) => {
+    Book.updateOne({_id: req.params.id}, {...req.body, _id: req.params.id})
+    .then(() => res.status(200).json({message: 'Livre modifié !'}))
+    .catch(error => res.status(400).json({ error}));
+  });
+
+  app.delete('/api/books/:id', (req, res, next) => {
+    Book.deleteOne({_id: req.params.id})
+    .then(() => res.status(200).json({message: 'Livre supprimé !'}))
+    .catch(error => res.status(400).json({ error}));
+  });
+
+  app.get('/api/books/:id', (req, res, next) => {
+    Book.findOne({_id: req.params.id})
+    .then(book => res.status(200).json(book))
+    .catch(error => res.status(404).json({error}));
   });
 
 app.get('/api/books', (req, res, next) => {
-    const books = [
-        {
-            userId: "1234",
-            title: "Fourth Wings",
-            author: "Rebecca Yaros",
-            imageUrl: "https://cdn1.booknode.com/book_cover/5254/fourth_wing_tome_1-5253815-264-432.jpg",
-            year: 2021,
-            genre: "Fantastique",
-            ratings: [
-                {
-                    userId:"1234",
-                    grade: 5
-                }
-            ],
-            averageRating: 4.3
-        },
-        {
-            userId: "456",
-            title: "Thiziri",
-            author: "Alexiane de Lys",
-            imageUrl: "https://static.fnac-static.com/multimedia/PE/Images/FR/NR/2b/e1/e2/14868779/1540-1/tsp20241019075805/Thiziri-Tome-2.jpg",
-            year: 2023,
-            genre: "Fantasy",
-            ratings:[
-                {
-                    userId:"456",
-                    grade: 4
-                }
-            ],
-            averageRating: 3.2
-        }
-    ]
-    res.status(200).json(books);
+    Book.find()
+    .then(books => res.status(200).json(books))
+    .catch(error => res.status(400).json({ error}));
 });
 
 module.exports = app;
