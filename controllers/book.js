@@ -1,5 +1,6 @@
 const Book = require('../models/Book');
 const fs = require('fs');
+const path = require('path');
 
 exports.createBook = (req, res, next) => {
   const bookObject = JSON.parse(req.body.book);
@@ -23,11 +24,24 @@ exports.modifyBook = (req, res, next) => {
     } : {...req.body};
 
     delete bookObject._userId;
+
     Book.findOne({_id: req.params.id})
     .then((book) => {
       if (book.userId != req.auth.userId) {
         res.status(401).json({message: 'Non-autorisé'});
-      } else {
+      } else 
+      {
+        if (req.file){
+          const oldImagePath = book.imageUrl.split("/images/")[1];
+          const oldImage = path.join('images', oldImagePath);
+
+          fs.unlink(oldImage, (err) => {
+            if (err){
+              return res.status(500).json({message: "Erreur lors de la suppression de l'image"})
+            }
+          })
+        }
+
         Book.updateOne({_id: req.params.id}, {...bookObject, _id: req.params.id})
         .then(() => res.status(200).json({message: 'Livre modifié !'}))
         .catch(error => res.status(401).json({error}));
