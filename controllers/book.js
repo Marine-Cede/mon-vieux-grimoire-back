@@ -96,6 +96,11 @@ exports.createRating = (req, res, next) => {
         return res.status(403).json({message: 'Non autorisé'})
       }
         book.ratings.push(rate);
+
+        const totalNotes = book.ratings.map(rating => rating.grade).reduce((acc, value) => acc + value, 0)
+        const moyenne = Math.round(totalNotes/book.ratings.length)
+        book.averageRating = moyenne
+
         book.save()
         .then(updatedBook => res.status(200).json(updatedBook))
         .catch(error => res.status(400).json({error}));
