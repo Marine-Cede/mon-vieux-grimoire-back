@@ -6,6 +6,7 @@ const sharper = require('../middleware/sharp-config');
 const router = express.Router();
 
 router.get('/',  bookCtrl.getAllBooks);
+router.get('/bestrating', bookCtrl.getBestRatings);
 router.get('/:id',  bookCtrl.getOneBook);
 router.post('/', auth, multer, sharper, bookCtrl.createBook);
 router.put('/:id', auth, multer,sharper, bookCtrl.modifyBook);

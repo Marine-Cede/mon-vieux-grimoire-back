@@ -110,3 +110,17 @@ exports.createRating = (req, res, next) => {
     return res.status(400).json({message: 'La note doit être comprise entre 0 et 5'})
   }
 };
+
+exports.getBestRatings = (req, res, next) => {
+  Book.find({averageRating: {$exists: true}})
+  .sort({averageRating: -1})
+  .limit(3)
+  .then(books => {
+      if(books.length > 0){
+        return res.status(200).json(books)
+      }
+
+        return res.status(404).json({message: "Aucun livres n'a de moyenne"})
+    })
+  .catch(error => res.status(400).json({ error}));
+};
