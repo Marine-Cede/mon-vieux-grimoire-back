@@ -78,3 +78,30 @@ exports.getAllBooks = (req, res, next) => {
     .then(books => res.status(200).json(books))
     .catch(error => res.status(400).json({ error}));
 };
+
+exports.createRating = (req, res, next) => {
+  const rate = {
+    userId: req.body.userId,
+    grade: req.body.rating
+  }
+
+  if(rate.grade >= 0 && rate.grade <= 5){
+    Book.findOne({_id: req.params.id})
+    .then(book => {
+      if (!book) {
+        return res.status(404).json({ message: 'Livre introuvable' });
+      }
+
+      if(book.ratings.some(rating => rating.userId === req.auth.userId)){
+        return res.status(403).json({message: 'Non autorisé'})
+      }
+        book.ratings.push(rate);
+        book.save()
+        .then(updatedBook => res.status(200).json(updatedBook))
+        .catch(error => res.status(400).json({error}));
+    })
+    .catch(error => res.status(404).json({error}));
+  } else {
+    return res.status(400).json({message: 'La note doit être comprise entre 0 et 5'})
+  }
+};
