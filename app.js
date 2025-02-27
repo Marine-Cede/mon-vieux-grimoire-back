@@ -5,8 +5,15 @@ const bookRoutes = require('./routes/book');
 const userRoutes = require('./routes/user');
 const path = require('path');
 const bodyParser = require('body-parser');
+require('dotenv').config()
 
-mongoose.connect('mongodb+srv://Utilisateur1:Chi0t123@clustergrimoire.xr2dw.mongodb.net/?retryWrites=true&w=majority&appName=ClusterGrimoire',
+const dbUser = process.env.DB_USER;
+const dbPass = process.env.DB_PASS;
+const dbHost = process.env.DB_HOST;
+const dbName = process.env.DB_NAME;
+const mongoURI = `mongodb+srv://${dbUser}:${dbPass}@${dbHost}/${dbName}?retryWrites=true&w=majority`;
+
+mongoose.connect(mongoURI,
     { useNewUrlParser: true,
       useUnifiedTopology: true })
     .then(() => console.log('Connexion à MongoDB réussie !'))

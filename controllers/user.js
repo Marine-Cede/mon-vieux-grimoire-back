@@ -3,6 +3,15 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 exports.signup = (req, res, next) =>{
+    const {email, password} = req.body;
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    if (!email || !emailRegex.test(email)) {
+        return res.status(400).json({ message: 'Email invalide' });
+    }
+    if (!password || password.trim().length <= 5) {
+        return res.status(400).json({ message: 'Le mot de passe doit contenir au moins 6 caractères' });
+    }
+
     bcrypt.hash(req.body.password, 10)
     .then(hash => {
         const user = new User({
