@@ -1,5 +1,23 @@
+const mongoose = require('mongoose');
 const express = require('express');
 const app = express();
+const bookRoutes = require('./routes/book');
+const userRoutes = require('./routes/user');
+const path = require('path');
+const bodyParser = require('body-parser');
+require('dotenv').config()
+
+const dbUser = process.env.DB_USER;
+const dbPass = process.env.DB_PASS;
+const dbHost = process.env.DB_HOST;
+const dbName = process.env.DB_NAME;
+const mongoURI = `mongodb+srv://${dbUser}:${dbPass}@${dbHost}/${dbName}?retryWrites=true&w=majority`;
+
+mongoose.connect(mongoURI,
+    { useNewUrlParser: true,
+      useUnifiedTopology: true })
+    .then(() => console.log('Connexion à MongoDB réussie !'))
+    .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 app.use(express.json());
 
@@ -10,47 +28,10 @@ app.use((req, res, next) => {
     next();
   });
 
-  app.post('/api/book', (req, res, next) => {
-    console.log(req.body);
-    res.status(201).json({
-        message: 'Livre crée'
-    });
-  });
+app.use(bodyParser.json())
 
-app.get('/api/books', (req, res, next) => {
-    const books = [
-        {
-            userId: "1234",
-            title: "Fourth Wings",
-            author: "Rebecca Yaros",
-            imageUrl: "https://cdn1.booknode.com/book_cover/5254/fourth_wing_tome_1-5253815-264-432.jpg",
-            year: 2021,
-            genre: "Fantastique",
-            ratings: [
-                {
-                    userId:"1234",
-                    grade: 5
-                }
-            ],
-            averageRating: 4.3
-        },
-        {
-            userId: "456",
-            title: "Thiziri",
-            author: "Alexiane de Lys",
-            imageUrl: "https://static.fnac-static.com/multimedia/PE/Images/FR/NR/2b/e1/e2/14868779/1540-1/tsp20241019075805/Thiziri-Tome-2.jpg",
-            year: 2023,
-            genre: "Fantasy",
-            ratings:[
-                {
-                    userId:"456",
-                    grade: 4
-                }
-            ],
-            averageRating: 3.2
-        }
-    ]
-    res.status(200).json(books);
-});
+app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/api/books', bookRoutes);
+app.use('/api/auth', userRoutes);
 
 module.exports = app;
